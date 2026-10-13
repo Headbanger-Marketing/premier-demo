@@ -41,7 +41,7 @@ const TRUST_DIMS = {
         Furnaces, AC, boilers and water heaters for homeowners and home builders, from Strathroy to St. Thomas.
       </p>
       <div class="hero__cta">
-        <a class="btn btn--primary" href="#quote">Get a Quote</a>
+        <a class="btn btn--primary" href="#quote">Get A Free Quote</a>
         <a class="btn btn--ghost-light" href={SITE.phoneHref}>Call {SITE.phone}</a>
       </div>
     </div>
@@ -176,7 +176,7 @@ const TRUST_DIMS = {
           Financing so you can spread the cost into monthly payments and put the right system in, not the cheapest
           stopgap. Ask about financing when you request your quote.
         </p>
-        <a class="btn btn--ghost-light" href="#quote">Get a Quote</a>
+        <a class="btn btn--ghost-light" href="#quote">Get A Free Quote</a>
       </div>
       <div class="band-panel band-panel--narrow">
         <h2>Same-day and emergency service</h2>
@@ -190,12 +190,12 @@ const TRUST_DIMS = {
   <section class="section" id="quote">
     <div class="container quote reveal">
       <div class="section-head section-head--center">
-        <h2>Get a Quote</h2>
+        <h2>Get A Free Quote</h2>
         <hr class="temp-rule temp-rule--short" />
         <p class="lede">Tell us what you need and we will get back to you with next steps and honest pricing.</p>
       </div>
 
-      <form class="card quote__card" id="quote-form" novalidate>
+      <form class="card quote__card" id="quote-form" action={SITE.webhookUrl} method="POST" novalidate>
         <div class="form-grid">
           <div class="field">
             <label for="q-name">Name</label>
@@ -210,8 +210,8 @@ const TRUST_DIMS = {
             </p>
           </div>
           <div class="field field--full">
-            <label for="q-email">Email</label>
-            <input id="q-email" name="email" type="email" autocomplete="email" required />
+            <label for="q-email">Email (optional)</label>
+            <input id="q-email" name="email" type="email" autocomplete="email" />
             <p class="error" id="q-email-error">That email address looks incomplete. Enter it like name@example.com.</p>
           </div>
           <div class="field field--full">
@@ -224,16 +224,16 @@ const TRUST_DIMS = {
           </div>
         </div>
         <div class="quote__actions">
-          <button class="btn btn--primary" type="submit">Get a Quote</button>
-          <p class="quote__hint">Submitting opens your email app with the details filled in.</p>
+          <button class="btn btn--primary" type="submit">Get A Free Quote</button>
+          <p class="quote__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to Jayden's Mechanical. Service availability and appointments are confirmed separately.</p>
         </div>
       </form>
 
       <div id="quote-success" class="card quote__card quote__success" role="status" hidden>
-        <h3>Your request is ready to send</h3>
-        <p>Your email app should now be open with the details filled in. Hit send and we will get back to you.</p>
+        <h3>Request received</h3>
+        <p>Your request has been accepted. Jayden's Mechanical will review it and confirm service availability and the next step.</p>
         <p>
-          If nothing opened, call <a href={SITE.phoneHref}>{SITE.phone}</a> or email
+          If you need to discuss the request, call <a href={SITE.phoneHref}>{SITE.phone}</a> or email
           <a href={`mailto:${SITE.email}`}>{SITE.email}</a> and we will take the details over the phone.
         </p>
       </div>
@@ -262,7 +262,7 @@ const TRUST_DIMS = {
         {
           id: 'q-email',
           valid: function (v) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+            return !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
           },
         },
       ];
@@ -291,7 +291,7 @@ const TRUST_DIMS = {
         });
       });
 
-      form.addEventListener('submit', function (e) {
+      form.addEventListener('submit', async function (e) {
         e.preventDefault();
         // Honeypot: real visitors never see or fill this field.
         var trap = document.getElementById('q-company');
@@ -306,21 +306,45 @@ const TRUST_DIMS = {
           return;
         }
 
-        var name = document.getElementById('q-name').value.trim();
-        var phone = document.getElementById('q-phone').value.trim();
-        var email = document.getElementById('q-email').value.trim();
-        var message = document.getElementById('q-message').value.trim();
-        var body =
-          'Name: ' + name + '\nPhone: ' + phone + '\nEmail: ' + email + '\n\nMessage:\n' + (message || '(none)');
-        var href =
-          'mailto:info@premierheating.ca?subject=' +
-          encodeURIComponent('Quote request from ' + name) +
-          '&body=' +
-          encodeURIComponent(body);
-
-        form.hidden = true;
-        success.hidden = false;
-        window.location.href = href;
+        var button = form.querySelector('button[type="submit"]');
+        var status = form.querySelector('[role="status"]');
+        if (!button || button.disabled) return;
+        var fields = Array.from(form.querySelectorAll('input, select, textarea'));
+        var data = new FormData(form);
+        var payload = new URLSearchParams({
+          '1.3': String(data.get('name') || '').trim(), '4': String(data.get('phone') || '').trim(),
+          '2': String(data.get('email') || '').trim(), '3': String(data.get('message') || '').trim(),
+          '5.1': '', '5.3': '', '5.5': '', source_url: window.location.href, date_created: new Date().toISOString(),
+        });
+        button.disabled = true;
+        button.textContent = 'Sending...';
+        fields.forEach(function (field) { field.disabled = true; });
+        form.setAttribute('aria-busy', 'true');
+        if (status) status.textContent = 'Sending your request...';
+        var controller = new AbortController();
+        var timer = window.setTimeout(function () { controller.abort(); }, 90000);
+        try {
+          var response = await fetch(form.action, {
+            method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: payload.toString(), signal: controller.signal,
+          });
+          var result = await response.json();
+          if (!response.ok || result.error || result.success === false || result.accepted === false || result.status === 'error'
+            || (result.success !== true && result.accepted !== true)) throw new Error('Acceptance not confirmed');
+          form.hidden = true;
+          success.hidden = false;
+          var heading = success.querySelector('h2, h3');
+          heading.setAttribute('tabindex', '-1');
+          heading.focus();
+        } catch (error) {
+          if (status) status.textContent = 'We could not confirm your request. Your details are still here. Please try again, call (519) 245-5945 or use the email link below.';
+        } finally {
+          window.clearTimeout(timer);
+          button.disabled = false;
+          button.textContent = 'Get A Free Quote';
+          fields.forEach(function (field) { field.disabled = false; });
+          form.removeAttribute('aria-busy');
+        }
       });
     })();
   </script>

@@ -72,8 +72,22 @@ const schema = {
 
     <div class="callbar">
       <a class="btn btn--primary" href={SITE.phoneHref}>Call {SITE.phone}</a>
-      <a class="btn btn--ghost-light" href="/#quote">Get a Quote</a>
+      <a class="btn btn--ghost-light" href="/#quote">Get A Free Quote</a>
     </div>
 
+  <script>
+    const focusQuote = () => {
+      const target = document.getElementById(location.hash.slice(1));
+      const field = target?.querySelector('input:not([tabindex="-1"]), select, textarea') as HTMLElement | null;
+      field?.focus({ preventScroll: true });
+    };
+    window.addEventListener('hashchange', focusQuote);
+    window.addEventListener('load', () => window.requestAnimationFrame(focusQuote));
+    document.addEventListener('click', (event) => {
+      const link = (event.target as Element).closest('a[href*="#"]') as HTMLAnchorElement | null;
+      if (link && link.origin === location.origin && link.pathname === location.pathname) window.setTimeout(focusQuote, 0);
+    });
+    focusQuote();
+  </script>
   </body>
 </html>

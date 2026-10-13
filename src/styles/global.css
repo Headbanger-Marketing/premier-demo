@@ -189,3 +189,6 @@ p { text-wrap: pretty; }
   html { scroll-behavior: auto; }
   .card, .btn { transition: none; }
 }
+
+#quote, #contact-form { scroll-margin-top: 100px; }
+form :is(input, select, textarea, button):focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }

@@ -10,6 +10,7 @@ export const SITE = {
   phone: '(519) 245-5945',
   phoneHref: 'tel:+15192455945',
   email: 'info@premierheating.ca',
+  webhookUrl: 'https://auto.sdagents.ai/webhook/hvac-sites',
   address: {
     street: '176 Metcalfe St E',
     city: 'Strathroy',

@@ -29,8 +29,8 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
   <!-- Form + details -->
   <section class="section contact">
     <div class="container contact__grid reveal">
-      <form class="card contact-form" id="contact-form" novalidate>
-        <h2>Get a Quote</h2>
+      <form class="card contact-form" id="contact-form" action={SITE.webhookUrl} method="POST" novalidate>
+        <h2>Get A Free Quote</h2>
         <p class="contact-form__note">
           Tell us what you need. Questions are welcome too, you do not have to be ready to book anything.
         </p>
@@ -51,8 +51,8 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
           </div>
 
           <div class="field field--full">
-            <label for="c-email">Email</label>
-            <input id="c-email" name="email" type="email" autocomplete="email" required />
+            <label for="c-email">Email (optional)</label>
+            <input id="c-email" name="email" type="email" autocomplete="email" />
             <p class="error" id="c-email-error">That email address looks incomplete. Enter it like name@example.com.</p>
           </div>
 
@@ -71,15 +71,15 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         </div>
 
         <div class="contact-form__actions">
-          <button class="btn btn--primary" type="submit">Get a Quote</button>
-          <p class="contact-form__hint">Submitting opens your email app with the details filled in.</p>
+          <button class="btn btn--primary" type="submit">Get A Free Quote</button>
+          <p class="contact-form__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to Jayden's Mechanical. Service availability and appointments are confirmed separately.</p>
         </div>
       </form>
 
       <div id="contact-success" class="card contact-success" role="status" hidden>
-        <h2 id="contact-success-title" tabindex="-1">Your message is ready to send</h2>
-        <p>Your email app should now be open with the details filled in. Hit send and it comes straight to the shop.</p>
-        <p>If nothing opened, or you would rather talk it through, call us:</p>
+        <h2 id="contact-success-title" tabindex="-1">Request received</h2>
+        <p>Your request has been accepted. Jayden's Mechanical will review it and confirm service availability and the next step.</p>
+        <p>If you need to discuss the request, call us:</p>
         <p class="contact-success__phone">
           <a href={SITE.phoneHref}>{SITE.phone}</a>
         </p>
@@ -125,7 +125,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
   </section>
 
   <!-- Service area -->
-  <section class="section areas">
+  <section class="section areas" id="service-area">
     <div class="container reveal">
       <div class="areas__head">
         <p class="eyebrow">Service area</p>
@@ -160,7 +160,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         you.
       </p>
       <div class="close__cta">
-        <a class="btn btn--primary" href="#contact-form">Get a Quote</a>
+        <a class="btn btn--primary" href="#contact-form">Get A Free Quote</a>
         <a class="btn btn--ghost-light" href={SITE.phoneHref}>Call {SITE.phone}</a>
       </div>
     </div>
@@ -188,7 +188,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         {
           id: 'c-email',
           valid: function (v) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+            return !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
           },
         },
         {
@@ -223,7 +223,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         });
       });
 
-      form.addEventListener('submit', function (e) {
+      form.addEventListener('submit', async function (e) {
         e.preventDefault();
         // Honeypot: real visitors never see or fill this field.
         var trap = document.getElementById('c-company');
@@ -238,22 +238,45 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
           return;
         }
 
-        var name = document.getElementById('c-name').value.trim();
-        var phone = document.getElementById('c-phone').value.trim();
-        var email = document.getElementById('c-email').value.trim();
-        var message = document.getElementById('c-message').value.trim();
-        var body = 'Name: ' + name + '\nPhone: ' + phone + '\nEmail: ' + email + '\n\nMessage:\n' + message;
-        var href =
-          'mailto:info@premierheating.ca?subject=' +
-          encodeURIComponent('Website enquiry from ' + name) +
-          '&body=' +
-          encodeURIComponent(body);
-
-        form.hidden = true;
-        success.hidden = false;
-        var title = document.getElementById('contact-success-title');
-        if (title) title.focus();
-        window.location.href = href;
+        var button = form.querySelector('button[type="submit"]');
+        var status = form.querySelector('[role="status"]');
+        if (!button || button.disabled) return;
+        var fields = Array.from(form.querySelectorAll('input, select, textarea'));
+        var data = new FormData(form);
+        var payload = new URLSearchParams({
+          '1.3': String(data.get('name') || '').trim(), '4': String(data.get('phone') || '').trim(),
+          '2': String(data.get('email') || '').trim(), '3': String(data.get('message') || '').trim(),
+          '5.1': '', '5.3': '', '5.5': '', source_url: window.location.href, date_created: new Date().toISOString(),
+        });
+        button.disabled = true;
+        button.textContent = 'Sending...';
+        fields.forEach(function (field) { field.disabled = true; });
+        form.setAttribute('aria-busy', 'true');
+        if (status) status.textContent = 'Sending your request...';
+        var controller = new AbortController();
+        var timer = window.setTimeout(function () { controller.abort(); }, 90000);
+        try {
+          var response = await fetch(form.action, {
+            method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: payload.toString(), signal: controller.signal,
+          });
+          var result = await response.json();
+          if (!response.ok || result.error || result.success === false || result.accepted === false || result.status === 'error'
+            || (result.success !== true && result.accepted !== true)) throw new Error('Acceptance not confirmed');
+          form.hidden = true;
+          success.hidden = false;
+          var heading = success.querySelector('h2, h3');
+          heading.setAttribute('tabindex', '-1');
+          heading.focus();
+        } catch (error) {
+          if (status) status.textContent = 'We could not confirm your request. Your details are still here. Please try again, call (519) 245-5945 or use the email link below.';
+        } finally {
+          window.clearTimeout(timer);
+          button.disabled = false;
+          button.textContent = 'Get A Free Quote';
+          fields.forEach(function (field) { field.disabled = false; });
+          form.removeAttribute('aria-busy');
+        }
       });
     })();
   </script>
