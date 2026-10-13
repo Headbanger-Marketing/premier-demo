@@ -42,16 +42,20 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
             <p class="error" id="c-name-error">Name is empty. Enter your name so we know who to ask for.</p>
           </div>
 
-          <div class="field">
-            <label for="c-phone">Phone</label>
+          <div class="field field--full">
+            <label for="c-preferred">How should we contact you?</label>
+            <select id="c-preferred" name="preferred_contact"><option value="phone">Phone call</option><option value="email">Email</option></select>
+          </div>
+          <div class="field" data-contact-field="phone">
+            <label for="c-phone">Phone *</label>
             <input id="c-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required />
             <p class="error" id="c-phone-error">
               Enter a phone number we can reach you at, 10 digits like 519 245 5945.
             </p>
           </div>
 
-          <div class="field field--full">
-            <label for="c-email">Email (optional)</label>
+          <div class="field field--full" data-contact-field="email" hidden>
+            <label for="c-email">Email *</label>
             <input id="c-email" name="email" type="email" autocomplete="email" />
             <p class="error" id="c-email-error">That email address looks incomplete. Enter it like name@example.com.</p>
           </div>
@@ -64,6 +68,8 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
             </p>
           </div>
 
+          <div class="field"><label for="c-city">City / Town (optional)</label><input id="c-city" name="city" type="text" autocomplete="address-level2" /></div>
+          <div class="field"><label for="c-postal">Postal code (optional)</label><input id="c-postal" name="postal" type="text" autocomplete="postal-code" maxlength="7" /></div>
           <div class="visually-hidden" aria-hidden="true">
             <label for="c-company">Company</label>
             <input id="c-company" name="company" type="text" tabindex="-1" autocomplete="off" />
@@ -171,6 +177,19 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
       var form = document.getElementById('contact-form');
       if (!form) return;
       var success = document.getElementById('contact-success');
+      var preferred = form.querySelector('[name="preferred_contact"]');
+      function updateContact() {
+        form.querySelectorAll('[data-contact-field]').forEach(function (field) {
+          var chosen = field.getAttribute('data-contact-field') === preferred.value;
+          field.hidden = !chosen;
+          field.querySelector('input').required = chosen;
+          if (!chosen) field.querySelector('input').setAttribute('aria-invalid', 'false');
+          if (!chosen) field.classList.remove('invalid');
+        });
+      }
+      preferred.addEventListener('change', updateContact);
+      updateContact();
+
       var rules = [
         {
           id: 'c-name',
@@ -181,6 +200,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         {
           id: 'c-phone',
           valid: function (v) {
+            if (preferred.value !== 'phone') return true;
             var digits = v.replace(/\D/g, '');
             return digits.length >= 10 && digits.length <= 11;
           },
@@ -188,7 +208,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         {
           id: 'c-email',
           valid: function (v) {
-            return !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+            return preferred.value !== 'email' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
           },
         },
         {
@@ -243,10 +263,11 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         if (!button || button.disabled) return;
         var fields = Array.from(form.querySelectorAll('input, select, textarea'));
         var data = new FormData(form);
+        var submittedChannel = preferred.value;
         var payload = new URLSearchParams({
-          '1.3': String(data.get('name') || '').trim(), '4': String(data.get('phone') || '').trim(),
-          '2': String(data.get('email') || '').trim(), '3': String(data.get('message') || '').trim(),
-          '5.1': '', '5.3': '', '5.5': '', source_url: window.location.href, date_created: new Date().toISOString(),
+          '1.3': String(data.get('name') || '').trim(), '4': submittedChannel === 'phone' ? String(data.get('phone') || '').trim() : '',
+          '2': submittedChannel === 'email' ? String(data.get('email') || '').trim() : '', '3': 'Contact preference: ' + submittedChannel + ' | ' + String(data.get('message') || '').trim(),
+          '5.1': '', '5.3': String(data.get('city') || '').trim(), '5.5': String(data.get('postal') || '').trim(), source_url: window.location.href, date_created: new Date().toISOString(),
         });
         button.disabled = true;
         button.textContent = 'Sending...';
@@ -264,6 +285,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
           if (!response.ok || result.error || result.success === false || result.accepted === false || result.status === 'error'
             || (result.success !== true && result.accepted !== true)) throw new Error('Acceptance not confirmed');
           form.hidden = true;
+          success.querySelector('p').textContent = 'Your request has been accepted. Jayden\'s Mechanical will follow up by ' + (submittedChannel === 'email' ? 'email' : 'phone') + ' to confirm service availability and the next step. Submission does not book an appointment.';
           success.hidden = false;
           var heading = success.querySelector('h2, h3');
           heading.setAttribute('tabindex', '-1');
@@ -330,11 +352,13 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
   }
   /* Keep inputs at 16px or larger so iOS does not zoom on focus. */
   .contact-form input,
-  .contact-form textarea {
+  .contact-form textarea,
+  .contact-form select {
     font-size: 1.0625rem;
     min-height: 48px;
   }
-  .contact-form textarea {
+  .contact-form textarea,
+  .contact-form select {
     min-height: 120px;
     resize: vertical;
   }

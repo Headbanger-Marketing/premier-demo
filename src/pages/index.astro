@@ -202,15 +202,19 @@ const TRUST_DIMS = {
             <input id="q-name" name="name" type="text" autocomplete="name" required />
             <p class="error" id="q-name-error">Name is empty. Enter your name so we know who to ask for.</p>
           </div>
-          <div class="field">
-            <label for="q-phone">Phone</label>
+          <div class="field field--full">
+            <label for="q-preferred">How should we contact you?</label>
+            <select id="q-preferred" name="preferred_contact"><option value="phone">Phone call</option><option value="email">Email</option></select>
+          </div>
+          <div class="field" data-contact-field="phone">
+            <label for="q-phone">Phone *</label>
             <input id="q-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required />
             <p class="error" id="q-phone-error">
               That phone number is missing digits. Enter a 10 digit number like 519 245 5945.
             </p>
           </div>
-          <div class="field field--full">
-            <label for="q-email">Email (optional)</label>
+          <div class="field field--full" data-contact-field="email" hidden>
+            <label for="q-email">Email *</label>
             <input id="q-email" name="email" type="email" autocomplete="email" />
             <p class="error" id="q-email-error">That email address looks incomplete. Enter it like name@example.com.</p>
           </div>
@@ -218,6 +222,8 @@ const TRUST_DIMS = {
             <label for="q-message">What do you need done?</label>
             <textarea id="q-message" name="message" rows="5" autocomplete="off"></textarea>
           </div>
+          <div class="field"><label for="q-city">City / Town (optional)</label><input id="q-city" name="city" type="text" autocomplete="address-level2" /></div>
+          <div class="field"><label for="q-postal">Postal code (optional)</label><input id="q-postal" name="postal" type="text" autocomplete="postal-code" maxlength="7" /></div>
           <div class="visually-hidden" aria-hidden="true">
             <label for="q-company">Company</label>
             <input id="q-company" name="company" type="text" tabindex="-1" autocomplete="off" />
@@ -245,6 +251,19 @@ const TRUST_DIMS = {
       var form = document.getElementById('quote-form');
       if (!form) return;
       var success = document.getElementById('quote-success');
+      var preferred = form.querySelector('[name="preferred_contact"]');
+      function updateContact() {
+        form.querySelectorAll('[data-contact-field]').forEach(function (field) {
+          var chosen = field.getAttribute('data-contact-field') === preferred.value;
+          field.hidden = !chosen;
+          field.querySelector('input').required = chosen;
+          if (!chosen) field.querySelector('input').setAttribute('aria-invalid', 'false');
+          if (!chosen) field.classList.remove('invalid');
+        });
+      }
+      preferred.addEventListener('change', updateContact);
+      updateContact();
+
       var rules = [
         {
           id: 'q-name',
@@ -255,6 +274,7 @@ const TRUST_DIMS = {
         {
           id: 'q-phone',
           valid: function (v) {
+            if (preferred.value !== 'phone') return true;
             var digits = v.replace(/\D/g, '');
             return digits.length >= 10 && digits.length <= 11;
           },
@@ -262,7 +282,7 @@ const TRUST_DIMS = {
         {
           id: 'q-email',
           valid: function (v) {
-            return !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+            return preferred.value !== 'email' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
           },
         },
       ];
@@ -311,10 +331,11 @@ const TRUST_DIMS = {
         if (!button || button.disabled) return;
         var fields = Array.from(form.querySelectorAll('input, select, textarea'));
         var data = new FormData(form);
+        var submittedChannel = preferred.value;
         var payload = new URLSearchParams({
-          '1.3': String(data.get('name') || '').trim(), '4': String(data.get('phone') || '').trim(),
-          '2': String(data.get('email') || '').trim(), '3': String(data.get('message') || '').trim(),
-          '5.1': '', '5.3': '', '5.5': '', source_url: window.location.href, date_created: new Date().toISOString(),
+          '1.3': String(data.get('name') || '').trim(), '4': submittedChannel === 'phone' ? String(data.get('phone') || '').trim() : '',
+          '2': submittedChannel === 'email' ? String(data.get('email') || '').trim() : '', '3': 'Contact preference: ' + submittedChannel + ' | ' + String(data.get('message') || '').trim(),
+          '5.1': '', '5.3': String(data.get('city') || '').trim(), '5.5': String(data.get('postal') || '').trim(), source_url: window.location.href, date_created: new Date().toISOString(),
         });
         button.disabled = true;
         button.textContent = 'Sending...';
@@ -332,6 +353,7 @@ const TRUST_DIMS = {
           if (!response.ok || result.error || result.success === false || result.accepted === false || result.status === 'error'
             || (result.success !== true && result.accepted !== true)) throw new Error('Acceptance not confirmed');
           form.hidden = true;
+          success.querySelector('p').textContent = 'Your request has been accepted. Jayden\'s Mechanical will follow up by ' + (submittedChannel === 'email' ? 'email' : 'phone') + ' to confirm service availability and the next step. Submission does not book an appointment.';
           success.hidden = false;
           var heading = success.querySelector('h2, h3');
           heading.setAttribute('tabindex', '-1');

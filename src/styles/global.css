@@ -192,3 +192,6 @@ p { text-wrap: pretty; }
 
 #quote, #contact-form { scroll-margin-top: 100px; }
 form :is(input, select, textarea, button):focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+
+[data-contact-field][hidden] { display: none !important; }
+form select { width: 100%; min-height: 48px; padding: 12px 14px; font: inherit; border: 1px solid #b6bbc0; border-radius: 4px; background: #fafaf8; color: #171b1e; }
