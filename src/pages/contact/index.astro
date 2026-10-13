@@ -29,7 +29,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
   <!-- Form + details -->
   <section class="section contact">
     <div class="container contact__grid reveal">
-      <form class="card contact-form" id="contact-form" action={SITE.webhookUrl} method="POST" novalidate>
+      <form class="card contact-form" id="contact-form" action={SITE.webhookUrl} method="POST" onsubmit="if(this.dataset.intakeReady !== 'true') return false" novalidate>
         <h2>Get A Free Quote</h2>
         <p class="contact-form__note">
           Tell us what you need. Questions are welcome too, you do not have to be ready to book anything.
@@ -77,7 +77,8 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         </div>
 
         <div class="contact-form__actions">
-          <button class="btn btn--primary" type="submit">Get A Free Quote</button>
+          <button class="btn btn--primary" type="submit" disabled>Get A Free Quote</button>
+          <p class="contact-form__hint form-fallback">If this form has not loaded, <a href={`mailto:${SITE.email}`}>email us</a> to request a follow-up.</p>
           <p class="contact-form__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to Jayden's Mechanical. Service availability and appointments are confirmed separately.</p>
         </div>
       </form>
@@ -178,6 +179,9 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
       if (!form) return;
       var success = document.getElementById('contact-success');
       var preferred = form.querySelector('[name="preferred_contact"]');
+      var submitButton = form.querySelector('button[type="submit"]');
+      var fallback = form.querySelector('.form-fallback');
+      if (!preferred || !submitButton || !success) return;
       function updateContact() {
         form.querySelectorAll('[data-contact-field]').forEach(function (field) {
           var chosen = field.getAttribute('data-contact-field') === preferred.value;
@@ -291,6 +295,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
           heading.setAttribute('tabindex', '-1');
           heading.focus();
         } catch (error) {
+          if (fallback) fallback.hidden = false;
           if (status) status.textContent = 'We could not confirm your request. Your details are still here. Please try again, call (519) 245-5945 or use the email link below.';
         } finally {
           window.clearTimeout(timer);
@@ -300,6 +305,9 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
           form.removeAttribute('aria-busy');
         }
       });
+      form.dataset.intakeReady = 'true';
+      submitButton.disabled = false;
+      if (fallback) fallback.hidden = true;
     })();
   </script>
 </Base>

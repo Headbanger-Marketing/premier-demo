@@ -195,7 +195,7 @@ const TRUST_DIMS = {
         <p class="lede">Tell us what you need and we will get back to you with next steps and honest pricing.</p>
       </div>
 
-      <form class="card quote__card" id="quote-form" action={SITE.webhookUrl} method="POST" novalidate>
+      <form class="card quote__card" id="quote-form" action={SITE.webhookUrl} method="POST" onsubmit="if(this.dataset.intakeReady !== 'true') return false" novalidate>
         <div class="form-grid">
           <div class="field">
             <label for="q-name">Name</label>
@@ -230,7 +230,8 @@ const TRUST_DIMS = {
           </div>
         </div>
         <div class="quote__actions">
-          <button class="btn btn--primary" type="submit">Get A Free Quote</button>
+          <button class="btn btn--primary" type="submit" disabled>Get A Free Quote</button>
+          <p class="quote__hint form-fallback">If this form has not loaded, <a href={`mailto:${SITE.email}`}>email us</a> to request a follow-up.</p>
           <p class="quote__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to Jayden's Mechanical. Service availability and appointments are confirmed separately.</p>
         </div>
       </form>
@@ -252,6 +253,9 @@ const TRUST_DIMS = {
       if (!form) return;
       var success = document.getElementById('quote-success');
       var preferred = form.querySelector('[name="preferred_contact"]');
+      var submitButton = form.querySelector('button[type="submit"]');
+      var fallback = form.querySelector('.form-fallback');
+      if (!preferred || !submitButton || !success) return;
       function updateContact() {
         form.querySelectorAll('[data-contact-field]').forEach(function (field) {
           var chosen = field.getAttribute('data-contact-field') === preferred.value;
@@ -359,6 +363,7 @@ const TRUST_DIMS = {
           heading.setAttribute('tabindex', '-1');
           heading.focus();
         } catch (error) {
+          if (fallback) fallback.hidden = false;
           if (status) status.textContent = 'We could not confirm your request. Your details are still here. Please try again, call (519) 245-5945 or use the email link below.';
         } finally {
           window.clearTimeout(timer);
@@ -368,6 +373,9 @@ const TRUST_DIMS = {
           form.removeAttribute('aria-busy');
         }
       });
+      form.dataset.intakeReady = 'true';
+      submitButton.disabled = false;
+      if (fallback) fallback.hidden = true;
     })();
   </script>
 </Base>
