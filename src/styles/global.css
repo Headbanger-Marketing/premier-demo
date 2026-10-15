@@ -195,3 +195,9 @@ form :is(input, select, textarea, button):focus-visible { outline: 3px solid cur
 
 [data-contact-field][hidden] { display: none !important; }
 form select { width: 100%; min-height: 48px; padding: 12px 14px; font: inherit; border: 1px solid #b6bbc0; border-radius: 4px; background: #fafaf8; color: #171b1e; }
+
+/* Restored quote fields, scoped to the approved form contract. */
+form[data-quote-contract="2026-10-15"] .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+form[data-quote-contract="2026-10-15"] .field--full { grid-column: 1 / -1; }
+form[data-quote-contract="2026-10-15"] .field, form[data-quote-contract="2026-10-15"] input, form[data-quote-contract="2026-10-15"] select, form[data-quote-contract="2026-10-15"] textarea { min-width: 0; }
+@media (max-width: 560px) { form[data-quote-contract="2026-10-15"] .form-grid { grid-template-columns: 1fr; } }

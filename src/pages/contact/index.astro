@@ -29,55 +29,23 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
   <!-- Form + details -->
   <section class="section contact">
     <div class="container contact__grid reveal">
-      <form class="card contact-form" id="contact-form" action={SITE.webhookUrl} method="POST" onsubmit="if(this.dataset.intakeReady !== 'true') return false" novalidate>
-        <h2>Get A Free Quote</h2>
-        <p class="contact-form__note">
-          Tell us what you need. Questions are welcome too, you do not have to be ready to book anything.
-        </p>
+      <form class="card contact-form" id="contact-form" action={SITE.webhookUrl} method="POST" onsubmit="if(this.dataset.intakeReady !== 'true') return false" data-quote-contract="2026-10-15" novalidate>
+        <h2 data-quote-heading>Get a Free Quote</h2>
+        <p class="contact-form__note" data-quote-support>Tell us about your heating or cooling issue.</p>
 
         <div class="form-grid">
-          <div class="field">
-            <label for="c-name">Name</label>
-            <input id="c-name" name="name" type="text" autocomplete="name" required />
-            <p class="error" id="c-name-error">Name is empty. Enter your name so we know who to ask for.</p>
-          </div>
-
-          <div class="field field--full">
-            <label for="c-preferred">How should we contact you?</label>
-            <select id="c-preferred" name="preferred_contact"><option value="phone">Phone call</option><option value="email">Email</option></select>
-          </div>
-          <div class="field" data-contact-field="phone">
-            <label for="c-phone">Phone *</label>
-            <input id="c-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required />
-            <p class="error" id="c-phone-error">
-              Enter a phone number we can reach you at, 10 digits like 519 245 5945.
-            </p>
-          </div>
-
-          <div class="field field--full" data-contact-field="email" hidden>
-            <label for="c-email">Email *</label>
-            <input id="c-email" name="email" type="email" autocomplete="email" />
-            <p class="error" id="c-email-error">That email address looks incomplete. Enter it like name@example.com.</p>
-          </div>
-
-          <div class="field field--full">
-            <label for="c-message">What do you need done?</label>
-            <textarea id="c-message" name="message" rows="5" autocomplete="off" required></textarea>
-            <p class="error" id="c-message-error">
-              Add a line or two about the job so we can send the right person and the right parts.
-            </p>
-          </div>
-
-          <div class="field"><label for="c-city">City / Town (optional)</label><input id="c-city" name="city" type="text" autocomplete="address-level2" /></div>
-          <div class="field"><label for="c-postal">Postal code (optional)</label><input id="c-postal" name="postal" type="text" autocomplete="postal-code" maxlength="7" /></div>
-          <div class="visually-hidden" aria-hidden="true">
-            <label for="c-company">Company</label>
-            <input id="c-company" name="company" type="text" tabindex="-1" autocomplete="off" />
-          </div>
+          <div class="field field--full"><label for="c-name">Full Name *</label><input id="c-name" name="name" data-quote-field="name" type="text" autocomplete="name" placeholder="Jane Doe" required /><p class="error" id="c-name-error">Enter your full name.</p></div>
+          <div class="field" data-contact-field="phone"><label for="c-phone">Phone *</label><input id="c-phone" name="phone" data-quote-field="phone" type="tel" autocomplete="tel" placeholder="(905) 000-0000" required /><p class="error" id="c-phone-error">Enter a valid phone number with at least 10 digits.</p></div>
+          <div class="field" data-contact-field="email"><label for="c-email">Email *</label><input id="c-email" name="email" data-quote-field="email" type="email" autocomplete="email" placeholder="you@email.com" required /><p class="error" id="c-email-error">Enter a valid email address.</p></div>
+          <div class="field field--full"><label for="c-address">Street Address</label><input id="c-address" name="address" data-quote-field="address" type="text" autocomplete="address-line1" placeholder="123 Main St" /></div>
+          <div class="field"><label for="c-city">City *</label><input id="c-city" name="city" data-quote-field="city" type="text" autocomplete="address-level2" placeholder={SITE.address.city} required /><p class="error" id="c-city-error">Enter the property city.</p></div>
+          <div class="field"><label for="c-postal">Postal Code *</label><input id="c-postal" name="postal" data-quote-field="postal" type="text" autocomplete="postal-code" placeholder="N1A 1A1" required /><p class="error" id="c-postal-error">Enter a valid Canadian postal code.</p></div>
+          <div class="field field--full"><label for="c-service">Work to discuss</label><select id="c-service" name="service" data-quote-field="service"><option value="">Choose the work</option><option>Furnace repair</option><option>Air conditioning</option><option>Boilers</option><option>Water heaters</option><option>Gas lines</option><option>Other heating or cooling work</option></select></div>
+          <div class="field field--full"><label for="c-message">Briefly describe your issue *</label><textarea id="c-message" name="message" data-quote-field="message" rows="5" autocomplete="off" placeholder="e.g. Furnace won’t turn on." required></textarea><p class="error" id="c-message-error">Briefly describe the work you need.</p></div>
+          <div class="visually-hidden" aria-hidden="true"><label for="c-company">Company</label><input id="c-company" name="company" type="text" tabindex="-1" autocomplete="off" /></div>
         </div>
-
         <div class="contact-form__actions">
-          <button class="btn btn--primary" type="submit" disabled>Get A Free Quote</button>
+          <button class="btn btn--primary" type="submit" disabled>Request My Free Quote</button>
           <p class="contact-form__hint form-fallback">If this form has not loaded, <a href={`mailto:${SITE.email}`}>email us</a> to request a follow-up.</p>
           <p class="contact-form__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to the service team. Service availability and appointments are confirmed separately.</p>
         </div>
@@ -178,49 +146,23 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
       var form = document.getElementById('contact-form');
       if (!form) return;
       var success = document.getElementById('contact-success');
-      var preferred = form.querySelector('[name="preferred_contact"]');
+      var preferred = { value: 'email' };
+      var received = false;
       var submitButton = form.querySelector('button[type="submit"]');
       var fallback = form.querySelector('.form-fallback');
-      if (!preferred || !submitButton || !success) return;
-      function updateContact() {
-        form.querySelectorAll('[data-contact-field]').forEach(function (field) {
-          var chosen = field.getAttribute('data-contact-field') === preferred.value;
-          field.hidden = !chosen;
-          field.querySelector('input').required = chosen;
-          if (!chosen) field.querySelector('input').setAttribute('aria-invalid', 'false');
-          if (!chosen) field.classList.remove('invalid');
-        });
-      }
-      preferred.addEventListener('change', updateContact);
-      updateContact();
+      if (!submitButton || !success) return;
+      form.querySelectorAll('[data-contact-field]').forEach(function (field) {
+        field.hidden = false;
+        field.querySelector('input').required = true;
+      });
 
       var rules = [
-        {
-          id: 'c-name',
-          valid: function (v) {
-            return v.trim().length >= 2;
-          },
-        },
-        {
-          id: 'c-phone',
-          valid: function (v) {
-            if (preferred.value !== 'phone') return true;
-            var digits = v.replace(/\D/g, '');
-            return digits.length >= 10 && digits.length <= 11;
-          },
-        },
-        {
-          id: 'c-email',
-          valid: function (v) {
-            return preferred.value !== 'email' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-          },
-        },
-        {
-          id: 'c-message',
-          valid: function (v) {
-            return v.trim().length >= 5;
-          },
-        },
+        { id: 'c-name', valid: function (v) { return v.trim().length >= 2; } },
+        { id: 'c-phone', valid: function (v) { var digits = v.replace(/\D/g, ''); return /^[+()\d\s.\-]+$/.test(v) && digits.length >= 10 && digits.length <= 15; } },
+        { id: 'c-email', valid: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); } },
+        { id: 'c-city', valid: function (v) { return Boolean(v.trim()); } },
+        { id: 'c-postal', valid: function (v) { return /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTVWXYZ][ -]?\d[ABCEGHJ-NPRSTVWXYZ]\d$/i.test(v.trim()); } },
+        { id: 'c-message', valid: function (v) { return Boolean(v.trim()); } },
       ];
 
       function check(rule) {
@@ -249,6 +191,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
 
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
+        if (received) return;
         // Honeypot: real visitors never see or fill this field.
         var trap = document.getElementById('c-company');
         if (trap && trap.value) return;
@@ -269,9 +212,9 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         var data = new FormData(form);
         var submittedChannel = preferred.value;
         var payload = new URLSearchParams({
-          '1.3': String(data.get('name') || '').trim(), '4': submittedChannel === 'phone' ? String(data.get('phone') || '').trim() : '',
-          '2': submittedChannel === 'email' ? String(data.get('email') || '').trim() : '', '3': 'Contact preference: ' + submittedChannel + ' | ' + String(data.get('message') || '').trim(),
-          '5.1': '', '5.3': String(data.get('city') || '').trim(), '5.5': String(data.get('postal') || '').trim(), source_url: window.location.href, date_created: new Date().toISOString(),
+          '1.3': String(data.get('name') || '').trim(), '4': String(data.get('phone') || '').trim(),
+          '2': String(data.get('email') || '').trim(), '3': (data.get('service') ? 'Service: ' + data.get('service') + ' | ' : '') + String(data.get('message') || '').trim(),
+          '5.1': String(data.get('address') || '').trim(), '5.3': String(data.get('city') || '').trim(), '5.5': String(data.get('postal') || '').trim(), source_url: window.location.href, date_created: new Date().toISOString(),
         });
         button.disabled = true;
         button.textContent = 'Sending...';
@@ -286,8 +229,10 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
             body: payload.toString(), signal: controller.signal,
           });
           var result = await response.json();
-          if (!response.ok || result.error || result.success === false || result.accepted === false || result.status === 'error'
+          if (!response.ok || !result || typeof result !== 'object' || Array.isArray(result) || result.error || result.success === false || result.accepted === false || result.ok === false || result.failed === true || result.rejected === true || result.receipt === 'not_confirmed'
+            || (Array.isArray(result.errors) ? result.errors.length > 0 : Boolean(result.errors)) || /^(error|failed|failure|rejected|denied)$/i.test(String(result.status || ''))
             || (result.success !== true && result.accepted !== true)) throw new Error('Acceptance not confirmed');
+          received = true;
           form.hidden = true;
           success.querySelector('p').textContent = 'Your request has been accepted. The service team will follow up by ' + (submittedChannel === 'email' ? 'email' : 'phone') + ' to confirm service availability and the next step. Submission does not book an appointment.';
           success.hidden = false;
@@ -299,8 +244,8 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
           if (status) status.textContent = 'We could not confirm your request. Your details are still here. Please try again, call (519) 245-5945 or use the email link below.';
         } finally {
           window.clearTimeout(timer);
-          button.disabled = false;
-          button.textContent = 'Get A Free Quote';
+          button.disabled = received;
+          button.textContent = 'Request My Free Quote';
           fields.forEach(function (field) { field.disabled = false; });
           form.removeAttribute('aria-busy');
         }
