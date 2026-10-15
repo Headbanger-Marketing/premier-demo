@@ -135,8 +135,7 @@ const TRUST_DIMS = {
           after house.
         </p>
         <p>
-          Premier is proudly part of Jayden's Mechanical’s Family of Brands, with the same service
-          and the same phone number.
+          Premier serves Strathroy and the surrounding communities with heating and cooling service.
         </p>
         <blockquote class="builder__quote">
           <p>“{TESTIMONIAL.quote}”</p>
@@ -232,13 +231,13 @@ const TRUST_DIMS = {
         <div class="quote__actions">
           <button class="btn btn--primary" type="submit" disabled>Get A Free Quote</button>
           <p class="quote__hint form-fallback">If this form has not loaded, <a href={`mailto:${SITE.email}`}>email us</a> to request a follow-up.</p>
-          <p class="quote__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to Jayden's Mechanical. Service availability and appointments are confirmed separately.</p>
+          <p class="quote__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to the service team. Service availability and appointments are confirmed separately.</p>
         </div>
       </form>
 
       <div id="quote-success" class="card quote__card quote__success" role="status" hidden>
         <h3>Request received</h3>
-        <p>Your request has been accepted. Jayden's Mechanical will review it and confirm service availability and the next step.</p>
+        <p>Your request has been accepted. The service team will review it and confirm service availability and the next step.</p>
         <p>
           If you need to discuss the request, call <a href={SITE.phoneHref}>{SITE.phone}</a> or email
           <a href={`mailto:${SITE.email}`}>{SITE.email}</a> and we will take the details over the phone.
@@ -357,7 +356,7 @@ const TRUST_DIMS = {
           if (!response.ok || result.error || result.success === false || result.accepted === false || result.status === 'error'
             || (result.success !== true && result.accepted !== true)) throw new Error('Acceptance not confirmed');
           form.hidden = true;
-          success.querySelector('p').textContent = 'Your request has been accepted. Jayden\'s Mechanical will follow up by ' + (submittedChannel === 'email' ? 'email' : 'phone') + ' to confirm service availability and the next step. Submission does not book an appointment.';
+          success.querySelector('p').textContent = 'Your request has been accepted. The service team will follow up by ' + (submittedChannel === 'email' ? 'email' : 'phone') + ' to confirm service availability and the next step. Submission does not book an appointment.';
           success.hidden = false;
           var heading = success.querySelector('h2, h3');
           heading.setAttribute('tabindex', '-1');

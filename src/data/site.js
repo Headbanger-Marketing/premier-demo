@@ -17,13 +17,6 @@ export const SITE = {
     region: 'ON',
     postal: 'N7G 1P6',
   },
-  parent: {
-    name: "Jayden's Mechanical",
-    url: 'https://jaydensmechanical.com',
-  },
-  // Client-approved wording. Use this line verbatim; do not reword it.
-  familyLine:
-    "Proudly part of Jayden's Mechanical’s Family of Brands.",
 };
 
 export const SERVICES = [

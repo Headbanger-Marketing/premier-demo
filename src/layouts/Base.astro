@@ -25,12 +25,7 @@ const schema = {
   },
   geo: { '@type': 'GeoCoordinates', latitude: 42.9565, longitude: -81.6222 },
   url: 'https://premierheating.ca',
-  parentOrganization: {
-    '@type': 'Organization',
-    name: SITE.parent.name,
-    url: SITE.parent.url,
-  },
-  sameAs: [SITE.parent.url],
+  sameAs: [`https://${SITE.domain}`],
   areaServed: [
     'Strathroy', 'London', 'St. Thomas', 'Mount Brydges', 'Komoka', 'Delaware',
     'Melbourne', 'Glencoe', 'Kerwood', 'Ailsa Craig', 'Parkhill', 'Grand Bend',

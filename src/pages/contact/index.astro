@@ -79,13 +79,13 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
         <div class="contact-form__actions">
           <button class="btn btn--primary" type="submit" disabled>Get A Free Quote</button>
           <p class="contact-form__hint form-fallback">If this form has not loaded, <a href={`mailto:${SITE.email}`}>email us</a> to request a follow-up.</p>
-          <p class="contact-form__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to Jayden's Mechanical. Service availability and appointments are confirmed separately.</p>
+          <p class="contact-form__hint" role="status" aria-live="polite" aria-atomic="true">Your request goes to the service team. Service availability and appointments are confirmed separately.</p>
         </div>
       </form>
 
       <div id="contact-success" class="card contact-success" role="status" hidden>
         <h2 id="contact-success-title" tabindex="-1">Request received</h2>
-        <p>Your request has been accepted. Jayden's Mechanical will review it and confirm service availability and the next step.</p>
+        <p>Your request has been accepted. The service team will review it and confirm service availability and the next step.</p>
         <p>If you need to discuss the request, call us:</p>
         <p class="contact-success__phone">
           <a href={SITE.phoneHref}>{SITE.phone}</a>
@@ -289,7 +289,7 @@ const addressLine = `${SITE.address.city}, ${SITE.address.region} ${SITE.address
           if (!response.ok || result.error || result.success === false || result.accepted === false || result.status === 'error'
             || (result.success !== true && result.accepted !== true)) throw new Error('Acceptance not confirmed');
           form.hidden = true;
-          success.querySelector('p').textContent = 'Your request has been accepted. Jayden\'s Mechanical will follow up by ' + (submittedChannel === 'email' ? 'email' : 'phone') + ' to confirm service availability and the next step. Submission does not book an appointment.';
+          success.querySelector('p').textContent = 'Your request has been accepted. The service team will follow up by ' + (submittedChannel === 'email' ? 'email' : 'phone') + ' to confirm service availability and the next step. Submission does not book an appointment.';
           success.hidden = false;
           var heading = success.querySelector('h2, h3');
           heading.setAttribute('tabindex', '-1');
