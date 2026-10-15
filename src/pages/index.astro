@@ -16,12 +16,25 @@ const TRUST_DIMS = {
   '/assets/Better-Business-Bureau-logo-1-450x171.png': [450, 171],
   '/assets/communityvotes-winner-logo.png': [350, 279],
 };
+const faqs = [
+  ['What should I include for a Strathroy heating repair?', 'Describe the equipment, fuel and symptom, and provide a model number only if the label is safely visible. Mention any previous diagnosis and whether the system still operates. The service team can then review the request before confirming an appointment.'],
+  ['Can I ask about boiler and water-heater work together?', 'Identify each appliance and explain whether the concern involves room heating, domestic hot water or both. For a Strathroy home with hydronic heating, existing system records help distinguish boiler work from a separate water-heater replacement.'],
+  ['What helps plan ductless cooling for an addition?', 'Include the room layout, how the addition is used and any existing heating or cooling connection. Ask how the proposed indoor and outdoor units will serve that space and what installation and finishing work the estimate includes.'],
+  ['Can I request service from St. Thomas or Mount Brydges?', 'The Premier site lists Strathroy and surrounding communities, including St. Thomas, Mount Brydges, Komoka and Delaware. Give the exact address and the equipment involved so the team can confirm coverage and appointment options for your project.'],
+  ['How should I prepare an HVAC request for a new build?', 'Send the plans already available, the construction stage and the decisions still open. Identify any boiler, gas-line or cooling requirements separately. Equipment selection, rough-in timing and the final scope should be agreed before installation is scheduled.'],
+  ['Does the quote form confirm financing or a service visit?', 'A Premier form submission requests follow-up about the work. It does not reserve attendance or approve financing. Ask for the complete installed price and any current finance agreement, including charges and repayment conditions, before deciding.'],
+];
+const faqSchema = {
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+};
 ---
 <Base
   title="Furnace, AC & HVAC Experts in Strathroy | Premier Heating & Cooling"
   description="Furnace, AC, boiler and water heater service in Strathroy, London and St. Thomas from Premier Heating & Cooling. Lennox authorized dealer, TSSA registered."
   path="/"
   active="home"
+  schemaBlocks={[faqSchema]}
 >
   <!-- 1. Hero -->
   <section class="hero">
@@ -182,6 +195,13 @@ const TRUST_DIMS = {
         <p>No heat in January or no cooling in a heat wave will not wait for business hours. Neither do we.</p>
         <a class="btn btn--primary" href={SITE.phoneHref}>Call {SITE.phone}</a>
       </div>
+    </div>
+  </section>
+
+  <section class="section premier-faq">
+    <div class="container">
+      <div class="section-head section-head--center"><h2>Planning a project near Strathroy?</h2><hr class="temp-rule temp-rule--short" /></div>
+      <div class="premier-faq__list">{faqs.map(([question, answer]) => <details><summary>{question}</summary><p>{answer}</p></details>)}</div>
     </div>
   </section>
 
@@ -380,6 +400,10 @@ const TRUST_DIMS = {
 </Base>
 
 <style>
+  .premier-faq__list { max-width: 760px; margin-inline: auto; }
+  .premier-faq details { border-bottom: 1px solid var(--line); padding: 18px 0; }
+  .premier-faq summary { cursor: pointer; font-weight: 700; }
+  .premier-faq details p { margin-top: 14px; color: var(--ink-soft); }
   /* ---- 1. Hero ---- */
   .hero {
     position: relative;
